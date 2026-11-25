@@ -1,0 +1,185 @@
+/* ===== Base ===== */
+:root {
+  --red: #E3343A;
+  --text: #222;
+  --muted: #666;
+  --border: #ddd;
+  --bg: #f4f4f4;
+  --white: #fff;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: "Lato", Arial, sans-serif;
+  font-size: 14px;
+  color: var(--text);
+  background: var(--bg);
+}
+
+.container {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+h1 { margin: 0; font-size: 22px; font-weight: 700; }
+h2 { margin: 0 0 12px; font-size: 16px; font-weight: 700; }
+
+/* ===== Header ===== */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-top: 4px solid var(--red);
+  margin-bottom: 12px;
+}
+
+.lc-name { margin: 0 0 4px; color: var(--red); font-weight: 700; }
+
+.badge {
+  padding: 4px 10px;
+  border: 1px solid #c9a400;
+  background: #fff8d6;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+/* ===== Panels (white boxes) ===== */
+.panel {
+  background: var(--white);
+  border: 1px solid var(--border);
+  padding: 16px;
+  margin-bottom: 12px;
+}
+
+/* ===== Filters ===== */
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+.filters label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+input[type="date"] {
+  padding: 6px 8px;
+  border: 1px solid #bbb;
+  font-family: inherit;
+  font-size: 14px;
+}
+
+.toggle { display: flex; }
+
+.toggle button {
+  padding: 7px 16px;
+  border: 1px solid #bbb;
+  background: var(--white);
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.toggle button + button { border-left: none; }
+
+.toggle button.active {
+  background: var(--red);
+  border-color: var(--red);
+  color: var(--white);
+}
+
+.actions { display: flex; gap: 8px; margin-left: auto; }
+
+.btn {
+  padding: 7px 16px;
+  border: 1px solid #bbb;
+  background: var(--white);
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.btn:hover { background: #eee; }
+
+.btn-primary {
+  background: var(--red);
+  border-color: var(--red);
+  color: var(--white);
+}
+
+.btn-primary:hover { background: #c62a30; }
+
+/* ===== KPI cards ===== */
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.kpi {
+  background: var(--white);
+  border: 1px solid var(--border);
+  padding: 12px 16px;
+}
+
+.kpi-label { margin: 0; color: var(--muted); font-size: 12px; }
+.kpi-value { margin: 4px 0 0; font-size: 24px; font-weight: 700; }
+
+/* ===== Highlighted conversions ===== */
+.highlights {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 24px;
+}
+
+/* ===== Chart placeholder ===== */
+.chart-placeholder {
+  height: 220px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px dashed #bbb;
+  color: #999;
+}
+
+/* ===== Table ===== */
+.table-wrap { overflow-x: auto; }
+
+table { width: 100%; border-collapse: collapse; }
+
+th, td {
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  text-align: left;
+}
+
+th { background: #f0f0f0; font-weight: 700; }
+tbody tr:nth-child(even) { background: #fafafa; }
+.num { text-align: right; }
+
+/* ===== Footer ===== */
+.footer {
+  text-align: center;
+  color: #999;
+  font-size: 12px;
+  padding: 8px 0 16px;
+}
+
+/* ===== Mobile ===== */
+@media (max-width: 640px) {
+  .header { flex-direction: column; align-items: flex-start; }
+  .kpis { grid-template-columns: repeat(2, 1fr); }
+  .actions { margin-left: 0; width: 100%; }
+  .actions .btn { flex: 1; }
+}
