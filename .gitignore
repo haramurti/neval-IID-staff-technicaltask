@@ -1,2 +1,4 @@
 reference/
 .env
+backend/public/
+.vercel
