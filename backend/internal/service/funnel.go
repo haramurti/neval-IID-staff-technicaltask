@@ -4,10 +4,14 @@ package service
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/haramurti/neval-IID-staff-technicaltask/backend/internal/domain"
 )
+
+// ErrInvalidProgramme is returned for a programme other than OGX / ICX.
+var ErrInvalidProgramme = errors.New("invalid programme")
 
 // Filter is what we ask the repository for.
 type Filter struct {
@@ -40,7 +44,7 @@ func NewFunnelService(repo PerformanceRepository) *FunnelService {
 // Dates are YYYY-MM-DD strings, as they come from the API.
 func (s *FunnelService) GetFunnel(ctx context.Context, p domain.Programme, start, end string) (domain.Funnel, error) {
 	if !p.Valid() {
-		return domain.Funnel{}, fmt.Errorf("unknown programme %q", p)
+		return domain.Funnel{}, fmt.Errorf("%w %q (use OGX or ICX)", ErrInvalidProgramme, p)
 	}
 	r, err := domain.NewDateRange(start, end)
 	if err != nil {

@@ -24,6 +24,7 @@ func main() {
 
 	mux := http.NewServeMux()
 	mux.Handle("POST /graphql", a.GraphQLHandler())
+	mux.Handle("GET /export.csv", a.ExportCSVHandler())
 	mux.Handle("GET /playground", app.PlaygroundHandler("/graphql"))
 	mux.Handle("GET /", http.FileServer(http.Dir(frontendDir)))
 

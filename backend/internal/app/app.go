@@ -8,8 +8,10 @@ package app
 import (
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/handler/extension"
@@ -17,6 +19,8 @@ import (
 	"github.com/99designs/gqlgen/graphql/playground"
 
 	"github.com/haramurti/neval-IID-staff-technicaltask/backend/graph"
+	"github.com/haramurti/neval-IID-staff-technicaltask/backend/internal/domain"
+	"github.com/haramurti/neval-IID-staff-technicaltask/backend/internal/export"
 	"github.com/haramurti/neval-IID-staff-technicaltask/backend/internal/repository/expa"
 	"github.com/haramurti/neval-IID-staff-technicaltask/backend/internal/repository/mock"
 	"github.com/haramurti/neval-IID-staff-technicaltask/backend/internal/service"
@@ -62,6 +66,31 @@ func (a *App) GraphQLHandler() http.Handler {
 	srv.AddTransport(transport.POST{})
 	srv.Use(extension.Introspection{}) // lets the playground show the schema
 	return srv
+}
+
+// ExportCSVHandler serves GET /export.csv?programme=OGX&start=YYYY-MM-DD&end=YYYY-MM-DD.
+// It reuses the same service as GraphQL, so the numbers always match the dashboard.
+func (a *App) ExportCSVHandler() http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		q := r.URL.Query()
+		f, err := a.Funnels.GetFunnel(r.Context(),
+			domain.Programme(q.Get("programme")), q.Get("start"), q.Get("end"))
+		if err != nil {
+			if errors.Is(err, domain.ErrInvalidDateRange) || errors.Is(err, service.ErrInvalidProgramme) {
+				http.Error(w, err.Error(), http.StatusBadRequest)
+				return
+			}
+			log.Printf("export csv failed: %v", err) // details stay on the server
+			http.Error(w, "could not export data, please try again later", http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "text/csv; charset=utf-8")
+		w.Header().Set("Content-Disposition", `attachment; filename="`+export.Filename(f)+`"`)
+		if err := export.WriteCSV(w, f, time.Now()); err != nil {
+			log.Printf("write csv: %v", err)
+		}
+	})
 }
 
 // PlaygroundHandler is a small in-browser GraphQL IDE, handy for demos.

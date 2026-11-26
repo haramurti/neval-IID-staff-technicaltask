@@ -242,8 +242,21 @@ document.querySelectorAll(".toggle button").forEach((button) => {
 
 document.getElementById("apply-btn").addEventListener("click", loadDashboard);
 
+// Export CSV: the Go server builds the file from the same data as the
+// dashboard. We just open the URL; the browser downloads the file.
 document.getElementById("export-btn").addEventListener("click", () => {
-  alert("CSV export will be connected once the backend is ready.");
+  const start = document.getElementById("start-date").value;
+  const end = document.getElementById("end-date").value;
+
+  const dateError = validateDates(start, end);
+  if (dateError) {
+    showStatus("error", dateError);
+    return;
+  }
+
+  // URLSearchParams builds "programme=OGX&start=...&end=..." safely.
+  const params = new URLSearchParams({ programme: currentProgramme, start: start, end: end });
+  window.location.href = "/export.csv?" + params.toString();
 });
 
 // First load when the page opens.
