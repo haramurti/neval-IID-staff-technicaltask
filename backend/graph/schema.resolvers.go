@@ -7,15 +7,27 @@ package graph
 
 import (
 	"context"
-	"fmt"
+	"errors"
+	"log"
 
 	"github.com/haramurti/neval-IID-staff-technicaltask/backend/graph/model"
+	"github.com/haramurti/neval-IID-staff-technicaltask/backend/internal/domain"
 )
 
 // Funnel is the resolver for the funnel field.
 func (r *queryResolver) Funnel(ctx context.Context, programme model.Programme, startDate string, endDate string) (*model.FunnelSummary, error) {
-	// TODO(B3): call the service layer here.
-	return nil, fmt.Errorf("funnel: not implemented yet")
+	f, err := r.Funnels.GetFunnel(ctx, domain.Programme(programme), startDate, endDate)
+	if err != nil {
+		// Input problems: safe and useful to show the client.
+		if errors.Is(err, domain.ErrInvalidDateRange) {
+			return nil, err
+		}
+		// Anything else (e.g. EXPA failure): log details on the server,
+		// return a generic message so internals never leak to the browser.
+		log.Printf("funnel query failed: %v", err)
+		return nil, errors.New("could not load funnel data, please try again later")
+	}
+	return toModelFunnel(f), nil
 }
 
 // Query returns QueryResolver implementation.
