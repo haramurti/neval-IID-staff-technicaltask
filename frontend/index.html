@@ -46,27 +46,27 @@
     <section class="kpis">
       <div class="kpi">
         <p class="kpi-label">Total SU</p>
-        <p class="kpi-value" id="kpi-su">420</p>
+        <p class="kpi-value" id="kpi-su">–</p>
       </div>
       <div class="kpi">
         <p class="kpi-label">Total APD</p>
-        <p class="kpi-value" id="kpi-apd">63</p>
+        <p class="kpi-value" id="kpi-apd">–</p>
       </div>
       <div class="kpi">
         <p class="kpi-label">Total RE</p>
-        <p class="kpi-value" id="kpi-re">50</p>
+        <p class="kpi-value" id="kpi-re">–</p>
       </div>
       <div class="kpi">
         <p class="kpi-label">SU → CO</p>
-        <p class="kpi-value" id="kpi-suco">9.0%</p>
+        <p class="kpi-value" id="kpi-suco">–</p>
       </div>
     </section>
 
     <!-- Highlighted conversion rates -->
     <section class="panel highlights">
-      <span>SU → APL: <strong id="conv-suapl">40.0%</strong></span>
-      <span>APL → APD: <strong id="conv-aplapd">37.5%</strong></span>
-      <span>APD → RE: <strong id="conv-apdre">79.4%</strong></span>
+      <span>SU → APL: <strong id="conv-suapl">–</strong></span>
+      <span>APL → APD: <strong id="conv-aplapd">–</strong></span>
+      <span>APD → RE: <strong id="conv-apdre">–</strong></span>
     </section>
 
     <!-- Chart placeholder (Chart.js comes in a later stage) -->
@@ -88,13 +88,7 @@
             </tr>
           </thead>
           <tbody id="phase-table">
-            <tr><td>SU – Sign-up</td><td class="num">420</td><td class="num">–</td></tr>
-            <tr><td>APL – Applied</td><td class="num">168</td><td class="num">40.0%</td></tr>
-            <tr><td>ACC – Accepted</td><td class="num">105</td><td class="num">62.5%</td></tr>
-            <tr><td>APD – Approved</td><td class="num">63</td><td class="num">60.0%</td></tr>
-            <tr><td>RE – Realized</td><td class="num">50</td><td class="num">79.4%</td></tr>
-            <tr><td>FIN – Finished</td><td class="num">42</td><td class="num">84.0%</td></tr>
-            <tr><td>CO – Completed</td><td class="num">38</td><td class="num">90.5%</td></tr>
+            <!-- rows are filled by app.js -->
           </tbody>
         </table>
       </div>
@@ -104,5 +98,7 @@
       IID Technical Task · Prototype
     </footer>
   </div>
+
+  <script src="app.js"></script>
 </body>
 </html>
