@@ -1,9 +1,9 @@
 // =====================================================================
 // LC Performance Dashboard - frontend logic
 //
-// Stage 2: data comes from the DUMMY_DATA object below.
-// Its shape matches the GraphQL `FunnelSummary` type the Go backend
-// will return, so in stage 3 we only replace getFunnel() with a fetch.
+// Data still comes from DUMMY_DATA below. Its shape matches the GraphQL
+// `FunnelSummary` type the Go backend will return, so in stage 3 we
+// only replace the inside of getFunnel() with a fetch to /graphql.
 // =====================================================================
 
 // Human-readable names for each phase code.
@@ -60,6 +60,10 @@ const DUMMY_DATA = {
 // Currently selected programme ("OGX" or "ICX").
 let currentProgramme = "OGX";
 
+// The Chart.js chart object. We keep it so we can update it later
+// instead of creating a new chart every time.
+let chart = null;
+
 // ---------- helpers ----------
 
 // 0.405 -> "40.5%", null -> "–"
@@ -79,11 +83,69 @@ function setText(id, text) {
   document.getElementById(id).textContent = text;
 }
 
+// True when every phase count is 0 -> nothing to show.
+function isEmpty(data) {
+  return data.phases.every((p) => p.count === 0);
+}
+
+// ---------- status (loading / empty / error) ----------
+
+// type: "loading" | "empty" | "error" | null (null = hide the box)
+function showStatus(type, message) {
+  const box = document.getElementById("status");
+  const results = document.getElementById("results");
+
+  if (type === null) {
+    box.hidden = true;
+    results.hidden = false;
+    return;
+  }
+
+  box.className = "status " + type;
+  box.textContent = message;
+  box.hidden = false;
+  results.hidden = true; // hide numbers so old data is never mistaken for new
+}
+
+// Returns an error message, or null if the dates are fine.
+function validateDates(start, end) {
+  if (!start || !end) return "Please fill in both start and end date.";
+  // "YYYY-MM-DD" strings can be compared directly as text.
+  if (start > end) return "Start date must be before or equal to end date.";
+  return null;
+}
+
 // ---------- data ----------
 
-// Stage 2: returns dummy data. Stage 3: will call /graphql.
+// Returns a Promise, like fetch() will in stage 3.
+// For now it waits a bit to imitate a network call, then returns dummy data.
+//
+// Test helpers (dummy only, removed in stage 3):
+//   - end date before 2026-01-01  -> empty result
+//   - add ?fail to the URL        -> simulated error
 function getFunnel(programme, startDate, endDate) {
-  return DUMMY_DATA[programme];
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      if (location.search.includes("fail")) {
+        reject(new Error("Could not reach the server (simulated)."));
+        return;
+      }
+
+      const data = DUMMY_DATA[programme];
+
+      if (endDate < "2026-01-01") {
+        // copy the data with every count set to 0
+        resolve({
+          ...data,
+          phases: data.phases.map((p) => ({ ...p, count: 0, conversionFromPrevious: null })),
+          suToApl: null, aplToApd: null, apdToRe: null, suToCo: null,
+        });
+        return;
+      }
+
+      resolve(data);
+    }, 500);
+  });
 }
 
 // ---------- rendering ----------
@@ -115,22 +177,74 @@ function renderTable(data) {
   });
 }
 
+function renderChart(data) {
+  const labels = data.phases.map((p) => p.phase);
+  const counts = data.phases.map((p) => p.count);
+
+  // Chart already exists: just swap the numbers and redraw.
+  if (chart) {
+    chart.data.labels = labels;
+    chart.data.datasets[0].data = counts;
+    chart.update();
+    return;
+  }
+
+  // First time: create the chart.
+  chart = new Chart(document.getElementById("phase-chart"), {
+    type: "bar",
+    data: {
+      labels: labels,
+      datasets: [{
+        label: "Count",
+        data: counts,
+        backgroundColor: "#E3343A",
+      }],
+    },
+    options: {
+      maintainAspectRatio: false, // fill the .chart-box height
+      plugins: { legend: { display: false } },
+      scales: { y: { beginAtZero: true, ticks: { precision: 0 } } },
+    },
+  });
+}
+
 function renderBadge(data) {
   const label = data.dataSource === "expa" ? "Data: EXPA live" : "Data: Mock (dummy)";
   setText("source-badge", label);
 }
 
 // Read the filters, get data, and draw everything.
-function loadDashboard() {
+async function loadDashboard() {
   const start = document.getElementById("start-date").value;
   const end = document.getElementById("end-date").value;
 
-  const data = getFunnel(currentProgramme, start, end);
+  const dateError = validateDates(start, end);
+  if (dateError) {
+    showStatus("error", dateError);
+    return;
+  }
 
-  renderBadge(data);
-  renderKpis(data);
-  renderHighlights(data);
-  renderTable(data);
+  showStatus("loading", "Loading data…");
+
+  try {
+    const data = await getFunnel(currentProgramme, start, end);
+
+    renderBadge(data);
+
+    if (isEmpty(data)) {
+      showStatus("empty", "No data for this period.");
+      return;
+    }
+
+    // Show the results first, so Chart.js can measure its box size.
+    showStatus(null);
+    renderKpis(data);
+    renderHighlights(data);
+    renderTable(data);
+    renderChart(data);
+  } catch (err) {
+    showStatus("error", "Failed to load data: " + err.message);
+  }
 }
 
 // ---------- events ----------
@@ -150,7 +264,7 @@ document.querySelectorAll(".toggle button").forEach((button) => {
 document.getElementById("apply-btn").addEventListener("click", loadDashboard);
 
 document.getElementById("export-btn").addEventListener("click", () => {
-  alert("CSV export will be connected in a later stage.");
+  alert("CSV export will be connected once the backend is ready.");
 });
 
 // First load when the page opens.

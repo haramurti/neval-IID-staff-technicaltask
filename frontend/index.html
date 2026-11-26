@@ -42,6 +42,12 @@
       </div>
     </section>
 
+    <!-- Status message: loading / empty / error. Hidden when empty text. -->
+    <div class="status" id="status" hidden></div>
+
+    <!-- Everything below is hidden while loading, on error, or when there is no data -->
+    <div id="results">
+
     <!-- KPI cards -->
     <section class="kpis">
       <div class="kpi">
@@ -69,10 +75,12 @@
       <span>APD → RE: <strong id="conv-apdre">–</strong></span>
     </section>
 
-    <!-- Chart placeholder (Chart.js comes in a later stage) -->
+    <!-- Bar chart (drawn by Chart.js in app.js) -->
     <section class="panel">
       <h2>Count per phase</h2>
-      <div class="chart-placeholder">Chart will appear here</div>
+      <div class="chart-box">
+        <canvas id="phase-chart"></canvas>
+      </div>
     </section>
 
     <!-- Phase table -->
@@ -94,11 +102,15 @@
       </div>
     </section>
 
+    </div> <!-- /results -->
+
     <footer class="footer">
       IID Technical Task · Prototype
     </footer>
   </div>
 
+  <!-- Chart.js from CDN (only external library) -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

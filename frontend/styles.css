@@ -143,15 +143,23 @@ input[type="date"] {
   gap: 8px 24px;
 }
 
-/* ===== Chart placeholder ===== */
-.chart-placeholder {
-  height: 220px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px dashed #bbb;
-  color: #999;
+/* ===== Chart ===== */
+.chart-box {
+  position: relative; /* Chart.js needs this to resize correctly */
+  height: 260px;
 }
+
+/* ===== Status messages (loading / empty / error) ===== */
+.status {
+  padding: 12px 16px;
+  margin-bottom: 12px;
+  border: 1px solid var(--border);
+  background: var(--white);
+}
+
+.status.loading { color: var(--muted); }
+.status.empty   { border-color: #c9a400; background: #fff8d6; }
+.status.error   { border-color: var(--red); background: #fdecec; color: #a01e23; }
 
 /* ===== Table ===== */
 .table-wrap { overflow-x: auto; }
