@@ -1,0 +1,20 @@
+# gqlgen config: tells gqlgen where the schema is and where to write Go code.
+schema:
+  - graph/schema.graphqls
+
+# Generated GraphQL runtime code. Never edit by hand.
+exec:
+  package: graph
+  filename: graph/generated.go
+
+# Go structs generated from the schema types (FunnelSummary, PhaseCount, enums).
+model:
+  package: model
+  filename: graph/model/models_gen.go
+
+# Resolvers: the part WE write. gqlgen creates stubs and keeps our code on regenerate.
+resolver:
+  package: graph
+  layout: follow-schema
+  dir: graph
+  filename_template: "{name}.resolvers.go"

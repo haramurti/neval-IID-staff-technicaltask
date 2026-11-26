@@ -1,0 +1,48 @@
+# GraphQL schema: the contract between the frontend and the Go server.
+# After editing this file, regenerate Go code with:
+#   go tool gqlgen generate     (run inside backend/)
+
+"oGX = outgoing exchange, iCX = incoming exchange"
+enum Programme {
+  OGX
+  ICX
+}
+
+"EXPA funnel phases, in order"
+enum Phase {
+  SU
+  APL
+  ACC
+  APD
+  RE
+  FIN
+  CO
+}
+
+"How many people reached one phase in the selected period"
+type PhaseCount {
+  phase: Phase!
+  count: Int!
+  "count / previous phase count (0.4 = 40%). null if previous count is 0"
+  conversionFromPrevious: Float
+}
+
+"Funnel numbers for one programme in one date range"
+type FunnelSummary {
+  programme: Programme!
+  startDate: String!
+  endDate: String!
+  phases: [PhaseCount!]!
+  "Highlighted conversions. null when the denominator is 0"
+  suToApl: Float
+  aplToApd: Float
+  apdToRe: Float
+  suToCo: Float
+  "\"mock\" or \"expa\", so the UI can show where data comes from"
+  dataSource: String!
+}
+
+type Query {
+  "Dates use the format YYYY-MM-DD. startDate must be <= endDate."
+  funnel(programme: Programme!, startDate: String!, endDate: String!): FunnelSummary!
+}
