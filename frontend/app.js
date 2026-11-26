@@ -1,9 +1,9 @@
 // =====================================================================
 // LC Performance Dashboard - frontend logic
 //
-// Data still comes from DUMMY_DATA below. Its shape matches the GraphQL
-// `FunnelSummary` type the Go backend will return, so in stage 3 we
-// only replace the inside of getFunnel() with a fetch to /graphql.
+// Data comes from our Go server's GraphQL endpoint (/graphql).
+// The browser never talks to EXPA directly: the server does that,
+// so the EXPA token never reaches this file.
 // =====================================================================
 
 // Human-readable names for each phase code.
@@ -17,45 +17,27 @@ const PHASE_NAMES = {
   CO: "Completed",
 };
 
-// Fake responses, one per programme. Conversion values are ratios
-// (0.4 = 40%) and null means "previous phase was 0" -> shown as "–".
-const DUMMY_DATA = {
-  OGX: {
-    programme: "OGX",
-    dataSource: "mock",
-    phases: [
-      { phase: "SU", count: 420, conversionFromPrevious: null },
-      { phase: "APL", count: 168, conversionFromPrevious: 0.4 },
-      { phase: "ACC", count: 105, conversionFromPrevious: 0.625 },
-      { phase: "APD", count: 63, conversionFromPrevious: 0.6 },
-      { phase: "RE", count: 50, conversionFromPrevious: 0.794 },
-      { phase: "FIN", count: 42, conversionFromPrevious: 0.84 },
-      { phase: "CO", count: 38, conversionFromPrevious: 0.905 },
-    ],
-    suToApl: 0.4,
-    aplToApd: 0.375,
-    apdToRe: 0.794,
-    suToCo: 0.09,
-  },
-  ICX: {
-    programme: "ICX",
-    dataSource: "mock",
-    phases: [
-      { phase: "SU", count: 0, conversionFromPrevious: null },
-      { phase: "APL", count: 85, conversionFromPrevious: null },
-      { phase: "ACC", count: 40, conversionFromPrevious: 0.471 },
-      { phase: "APD", count: 22, conversionFromPrevious: 0.55 },
-      { phase: "RE", count: 18, conversionFromPrevious: 0.818 },
-      { phase: "FIN", count: 15, conversionFromPrevious: 0.833 },
-      { phase: "CO", count: 14, conversionFromPrevious: 0.933 },
-    ],
-    // SU is 0 here on purpose, to show how null ("–") is displayed.
-    suToApl: null,
-    aplToApd: 0.259,
-    apdToRe: 0.818,
-    suToCo: null,
-  },
-};
+// The GraphQL query. It asks for exactly the fields the page uses.
+// $programme, $startDate, $endDate are variables sent next to the query.
+const FUNNEL_QUERY = `
+  query Funnel($programme: Programme!, $startDate: String!, $endDate: String!) {
+    funnel(programme: $programme, startDate: $startDate, endDate: $endDate) {
+      programme
+      startDate
+      endDate
+      dataSource
+      suToApl
+      aplToApd
+      apdToRe
+      suToCo
+      phases {
+        phase
+        count
+        conversionFromPrevious
+      }
+    }
+  }
+`;
 
 // Currently selected programme ("OGX" or "ICX").
 let currentProgramme = "OGX";
@@ -117,35 +99,32 @@ function validateDates(start, end) {
 
 // ---------- data ----------
 
-// Returns a Promise, like fetch() will in stage 3.
-// For now it waits a bit to imitate a network call, then returns dummy data.
+// Calls POST /graphql and returns the `funnel` object.
 //
-// Test helpers (dummy only, removed in stage 3):
-//   - end date before 2026-01-01  -> empty result
-//   - add ?fail to the URL        -> simulated error
-function getFunnel(programme, startDate, endDate) {
-  return new Promise((resolve, reject) => {
-    setTimeout(() => {
-      if (location.search.includes("fail")) {
-        reject(new Error("Could not reach the server (simulated)."));
-        return;
-      }
-
-      const data = DUMMY_DATA[programme];
-
-      if (endDate < "2026-01-01") {
-        // copy the data with every count set to 0
-        resolve({
-          ...data,
-          phases: data.phases.map((p) => ({ ...p, count: 0, conversionFromPrevious: null })),
-          suToApl: null, aplToApd: null, apdToRe: null, suToCo: null,
-        });
-        return;
-      }
-
-      resolve(data);
-    }, 500);
+// A GraphQL request is always a POST with JSON: { query, variables }.
+// A GraphQL response is { data, errors }. Errors (e.g. bad dates) usually
+// come back with HTTP 200, so we must check `errors` ourselves.
+async function getFunnel(programme, startDate, endDate) {
+  const response = await fetch("/graphql", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      query: FUNNEL_QUERY,
+      variables: { programme: programme, startDate: startDate, endDate: endDate },
+    }),
   });
+
+  if (!response.ok) {
+    throw new Error("Server returned HTTP " + response.status);
+  }
+
+  const result = await response.json();
+
+  if (result.errors && result.errors.length > 0) {
+    throw new Error(result.errors[0].message);
+  }
+
+  return result.data.funnel;
 }
 
 // ---------- rendering ----------
