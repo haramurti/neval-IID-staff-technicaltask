@@ -1,9 +1,4 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "rm -rf public && cp -R ../frontend public",
-  "outputDirectory": "public",
-  "rewrites": [
-    { "source": "/graphql", "destination": "/api/graphql" },
-    { "source": "/export.csv", "destination": "/api/export" }
-  ]
+  "buildCommand": "rm -rf web/dist && mkdir -p web/dist && cp -R ../frontend/. web/dist/ && touch web/dist/.keep && go build -o $VERCEL_OUTPUT_FILE ./cmd/server"
 }

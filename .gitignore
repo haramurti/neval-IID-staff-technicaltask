@@ -1,4 +1,5 @@
 reference/
 .env
-backend/public/
 .vercel
+backend/web/dist/*
+!backend/web/dist/.keep
