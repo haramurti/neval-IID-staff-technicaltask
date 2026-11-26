@@ -4,6 +4,22 @@ Real problems hit while building, with cause and fix. Newest first.
 
 ---
 
+## 5. No EXPA access token before the deadline
+
+**When:** whole project (planning on 26 Nov 2026).
+
+**Problem:** the task needs LC numbers via GraphQL from EXPA, but no access
+token was available. Without a token the EXPA schema cannot even be inspected,
+so the real query could not be written.
+
+**Fix:** a repository interface between the service and the data source.
+`MockRepository` serves realistic, reproducible seed data. `ExpaRepository` is a
+marked stub with a step-by-step TODO, and does not guess EXPA field names. The
+switch is one env var (`DATA_SOURCE`). The UI badge and the CSV say "mock" so
+dummy numbers are never presented as real.
+
+---
+
 ## 4. Vercel build failed: "No compiled Go binary found after buildCommand"
 
 **When:** first deploy to Vercel (26 Nov 2026).
